@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import type { Request, Response } from "express";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiResponse } from "cloudinary";
-import { toast } from "react-hot-toast"
+
 import { createRequire } from "node:module";
 import { buffer } from "node:stream/consumers";
 import { prisma } from "../db/connectDB.js";
