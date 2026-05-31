@@ -2,7 +2,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import type { Request, Response } from "express";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiResponse } from "cloudinary";
-
 import { createRequire } from "node:module";
 import { buffer } from "node:stream/consumers";
 import { prisma } from "../db/connectDB.js";
@@ -21,6 +20,14 @@ console.log("Cloudinary Configured In Portfolio Controller")
 
 export const GeneratePortfolio = async (req: Request, res: Response) => {
     try {
+        const userId = (req as any).id;
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user || user.credits <= 0) {
+            return res.status(403).json({
+                message: "Insufficient credits. Please upgrade your plan.",
+                success: false
+            });
+        }
         const { prompt, style } = req.body;
         const resumeFile = req.file;
         let ResumeText = "";
@@ -92,13 +99,17 @@ export const GeneratePortfolio = async (req: Request, res: Response) => {
         const jsonString = text.slice(jsonStart, jsonEnd);
         const ParsedPortfolio = JSON.parse(jsonString);
 
-         const newPortfolio = await prisma.portfolio.create({
+        const newPortfolio = await prisma.portfolio.create({
             data: {
-                userId: (req as any).id, // From your isAuth middleware
+                userId: (req as any).id,
                 title: ParsedPortfolio.fullName || "My Portfolio",
                 content: ParsedPortfolio,
                 templateId: style || "Professional"
             }
+        });
+        await prisma.user.update({
+            where: { id: userId },
+            data: { credits: { decrement: 1 } }
         });
         res.status(200).json(newPortfolio);
     } catch (error: any) {

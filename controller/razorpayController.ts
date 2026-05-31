@@ -1,6 +1,7 @@
 import { razorpay } from "../db/razorpay.js";
 import crypto from "crypto";
 import type {Request,Response} from "express"
+import { prisma } from "../db/connectDB.js";
 export const createOrder = async (req:Request,res:Response) =>{
     try{
         const options = {
@@ -16,14 +17,22 @@ export const createOrder = async (req:Request,res:Response) =>{
 } 
 
 export const verifyPayment = async(req:Request,res:Response) =>{
-    const {razorpay_order_id, razorpay_payment_id, razorpay_signature} = req.body;
+    const {razorpay_order_id, razorpay_payment_id, razorpay_signature,userId} = req.body;
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
     .createHmac("sha256",process.env.RAZORPAY_KEY_SECRET!)
     .update(sign)
     .digest("hex")
-
     if(expectedSign === razorpay_signature){
+        await prisma.user.update({
+            where:{id:userId},
+            data:{
+                plan:"PREMIUM",
+                credits:{
+                    increment:50
+                }
+            }
+        })
         return res.json({success: true, message: "Payment Verified"})
     }else{
         return res.json({success: false, message: "Invalid Signature"})   

@@ -1,13 +1,12 @@
-import { prisma } from "../db/connectDB.js"; // 1. Add this import
+import { prisma } from "../db/connectDB.js"; 
 
 export const handleUpload = async (req: any, res: any) => {
   try {
     const imageUrl = req.file.path;
     
-    // 2. Updated Prisma logic:
-    // This saves the image URL to the user's profilePic field in PostgreSQL
+   
     await prisma.user.update({ 
-      where: { id: req.user.id }, // Make sure 'isAuth' middleware is passing req.user
+      where: { id: req.user.id }, 
       data: { profilePic: imageUrl } 
     });
 

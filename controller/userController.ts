@@ -27,7 +27,6 @@ export const SignUp = async (req:Request, res:Response) => {
       }
     })
 
-    // Remove password before sending
     const userWithoutPassword = {
       _id: newUser.id,
       name: newUser.name,
@@ -84,7 +83,7 @@ export const Login = async (req:Request, res:Response) => {
       { expiresIn: "1d" }
     );
 
-    // Remove password from user object
+
     const userWithoutPassword = {
       _id: user.id,
       name: user.name,
@@ -96,7 +95,7 @@ export const Login = async (req:Request, res:Response) => {
       .cookie("token", token, {
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
-        sameSite: "lax", // Changed from strict for better dev compatibility
+        sameSite: "lax", 
       })
       .json({
         message: `${user.name} Login Successfully...`,
@@ -145,7 +144,7 @@ export const getMe = async (req: any, res: Response) => {
     });
     if (!user) return res.status(404).json({ message: 'User not found' });
     
-    // Remove password
+
     const { password, ...userWithoutPassword } = user;
     res.status(200).json({ success: true, user: userWithoutPassword });
   } catch (err) {
