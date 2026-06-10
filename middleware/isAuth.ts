@@ -10,8 +10,8 @@ const isAuthenticated = async (req: Request, res: Response, next: NextFunction) 
         const authHeader = req.headers.authorization;
         const token = authHeader && authHeader.split(' ')[1];
 
-        if (!token) {
-            console.log("Auth Failure: No token in cookies");
+        if (!token || token === "null" || token === "undefined") {
+            console.log("Auth Failure: No token or invalid token format");
             return res.status(401).json({ message: "User Not Authenticated..." });
         }
 

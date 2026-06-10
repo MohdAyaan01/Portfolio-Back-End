@@ -41,7 +41,7 @@ export const googleAuth = async (req: Request, res: Response) => {
       });
     }
     const tokenData = {
-      userId: user.id 
+      userId: user.id
     };
     const jwtToken = jwt.sign(
       tokenData,
@@ -51,7 +51,9 @@ export const googleAuth = async (req: Request, res: Response) => {
     const userWithoutPassword = {
       _id: user.id,
       name: user.name,
-      email: user.email
+      email: user.email,
+      plan: user.plan,       
+      credits: user.credits
     };
     return res
       .status(200)
