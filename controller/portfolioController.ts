@@ -45,7 +45,9 @@ export const GeneratePortfolio = async (req: Request, res: Response) => {
                 console.error("Text Extraction Error:", extractRawError);
             }
         }
-        const model = GenAi.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = GenAi.getGenerativeModel({ model: "gemini-2.5-flash",generationConfig: {
+        responseMimeType: "application/json",
+    } });
 
         const styleInstruction = {
             Professional: "Maintain a formal, corporate tone. Focus on clear achievements and industry-standard terminology.",
@@ -99,17 +101,20 @@ export const GeneratePortfolio = async (req: Request, res: Response) => {
         const jsonString = text.slice(jsonStart, jsonEnd);
         const ParsedPortfolio = JSON.parse(jsonString);
 
-        const newPortfolio = await prisma.portfolio.create({
-            data: {
-                userId: (req as any).id,
-                title: ParsedPortfolio.fullName || "My Portfolio",
-                content: ParsedPortfolio,
-                templateId: style || "Professional"
-            }
-        });
-        await prisma.user.update({
-            where: { id: userId },
-            data: { credits: { decrement: 1 } }
+        const newPortfolio = await prisma.$transaction(async (tx) => {
+            const portfolio = await tx.portfolio.create({
+                data: {
+                    userId: (req as any).id,
+                    title: ParsedPortfolio.fullName || "My Portfolio",
+                    content: ParsedPortfolio,
+                    templateId: style || "Professional"
+                }
+            });
+            await tx.user.update({
+                where: { id: userId },
+                data: { credits: { decrement: 1 } }
+            });
+            return portfolio;
         });
         res.status(200).json(newPortfolio);
     } catch (error: any) {

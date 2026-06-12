@@ -26,13 +26,13 @@ export const SignUp = async (req: Request, res: Response) => {
         password: hashPassword
       }
     })
-     // For SignUp:
+   
     const userWithoutPassword = {
       _id: newUser.id,
       name: newUser.name,
       email: newUser.email,
-      plan: newUser.plan,       // Add this
-      credits: newUser.credits   // Add this
+      plan: newUser.plan,       
+      credits: newUser.credits   
     };
 
     return res.status(200).json({
@@ -100,6 +100,7 @@ export const Login = async (req: Request, res: Response) => {
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: "lax",
+          secure: process.env.NODE_ENV === "production"
       })
       .json({
         message: `${user.name} Login Successfully...`,

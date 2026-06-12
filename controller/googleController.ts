@@ -60,7 +60,8 @@ export const googleAuth = async (req: Request, res: Response) => {
       .cookie("token", jwtToken, {
         httpOnly: true,
         sameSite: "lax",
-        maxAge: 24 * 60 * 60 * 1000
+        maxAge: 24 * 60 * 60 * 1000,
+        secure: process.env.NODE_ENV === "production"
       })
       .json({
         message: "Google Login Successfully",
