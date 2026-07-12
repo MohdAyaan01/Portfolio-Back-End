@@ -6,8 +6,8 @@ export const handleUpload = async (req: any, res: any) => {
     
    
     await prisma.user.update({ 
-      where: { id: req.user.id }, 
-      data: { profilePic: imageUrl } 
+      where: { id: req.id },
+      data: { profilePic: imageUrl }
     });
     res.status(200).json({ url: imageUrl });
   } catch (error) {

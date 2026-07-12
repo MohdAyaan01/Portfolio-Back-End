@@ -6,6 +6,6 @@ import { handleUpload } from '../controller/uploadController.js';
 import isAuthenticated from '../middleware/isAuth.js';
 const router = Router();
 const memoryUpload = multer({ storage: multer.memoryStorage() });
-router.post('/upload', upload.single('image'), handleUpload);
+router.post('/upload',isAuthenticated, upload.single('image'), handleUpload);
 router.post('/generate',isAuthenticated, memoryUpload.single('resume'), GeneratePortfolio);
 export default router;
