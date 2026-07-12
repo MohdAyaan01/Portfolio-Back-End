@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import { prisma } from "../db/connectDB.js";
+
 const client = new OAuth2Client(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string);
 export const googleAuth = async (req: Request, res: Response) => {
   try {
