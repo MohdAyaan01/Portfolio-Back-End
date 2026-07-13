@@ -116,17 +116,18 @@ export const Login = async (req: Request, res: Response) => {
     return res
       .status(200)
       .cookie("token", token, {
-        maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000,
         secure: process.env.NODE_ENV === "production"
       })
       .json({
-        message: `${user.name} Login Successfully...`,
+        message: "Google Login Successfully",
         success: true,
         user: userWithoutPassword,
-        token: token
+        token: token // <-- Add this line to return the token to the frontend
       });
+
 
   } catch (err: any) {
     console.log(err);
