@@ -5,6 +5,7 @@ import type { UploadApiResponse } from "cloudinary";
 import { createRequire } from "node:module";
 import { buffer } from "node:stream/consumers";
 import { prisma } from "../db/connectDB.js";
+import { Prisma } from "@prisma/client";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -101,7 +102,7 @@ export const GeneratePortfolio = async (req: Request, res: Response) => {
         const jsonString = text.slice(jsonStart, jsonEnd);
         const ParsedPortfolio = JSON.parse(jsonString);
 
-        const newPortfolio = await prisma.$transaction(async (tx) => {
+        const newPortfolio = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const portfolio = await tx.portfolio.create({
                 data: {
                     userId: (req as any).id,
