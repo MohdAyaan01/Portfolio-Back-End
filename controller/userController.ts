@@ -26,20 +26,39 @@ export const SignUp = async (req: Request, res: Response) => {
         password: hashPassword
       }
     })
-   
+
     const userWithoutPassword = {
       _id: newUser.id,
       name: newUser.name,
       email: newUser.email,
-      plan: newUser.plan,       
-      credits: newUser.credits   
+      plan: newUser.plan,
+      credits: newUser.credits
     };
 
-    return res.status(200).json({
-      message: "Account Created SuccessFully...",
-      success: true,
-      user: userWithoutPassword
-    })
+    const tokenData = {
+      userId: newUser.id,
+    };
+    const token = jwt.sign(
+      tokenData,
+      process.env.SECRET_KEY as string,
+      { expiresIn: "1d" }
+    );
+
+
+    return res
+      .status(200)
+      .cookie("token", token, {
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production"
+      })
+      .json({
+        message: "Account Created SuccessFully...",
+        success: true,
+        user: userWithoutPassword,
+        token: token // <-- Make sure to return the token here
+      });
   } catch (err: any) {
     console.log(err);
     res.status(500).json({ message: "Internal Server Error", success: false });
@@ -79,13 +98,13 @@ export const Login = async (req: Request, res: Response) => {
       userId: user.id,
     };
 
-      const token = jwt.sign(
+    const token = jwt.sign(
       tokenData,
       process.env.SECRET_KEY as string,
       { expiresIn: "1d" }
     );
 
-   
+
     const userWithoutPassword = {
       _id: user.id,
       name: user.name,
@@ -100,7 +119,7 @@ export const Login = async (req: Request, res: Response) => {
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: "lax",
-          secure: process.env.NODE_ENV === "production"
+        secure: process.env.NODE_ENV === "production"
       })
       .json({
         message: `${user.name} Login Successfully...`,
