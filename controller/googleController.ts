@@ -53,7 +53,7 @@ export const googleAuth = async (req: Request, res: Response) => {
       _id: user.id,
       name: user.name,
       email: user.email,
-      plan: user.plan,       
+      plan: user.plan,
       credits: user.credits
     };
     return res
@@ -67,6 +67,7 @@ export const googleAuth = async (req: Request, res: Response) => {
       .json({
         message: "Google Login Successfully",
         success: true,
+        token: jwtToken,
         user: userWithoutPassword
       });
   } catch (error: any) {
