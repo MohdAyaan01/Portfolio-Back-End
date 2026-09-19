@@ -125,7 +125,7 @@ export const Login = async (req: Request, res: Response) => {
         message: "Google Login Successfully",
         success: true,
         user: userWithoutPassword,
-        token: token // <-- Add this line to return the token to the frontend
+        token: token 
       });
 
 
