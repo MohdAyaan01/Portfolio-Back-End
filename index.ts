@@ -8,6 +8,7 @@ import type { CorsOptions } from "cors";
 import userRoutes from "./routes/userRoutes.js";
 import PortfolioRoutes from "./routes/portfolioRoutes.js";
 import paymentRoutes from "./routes/razorpayRoutes.js"
+import { errMiddleware } from "./middleware/errorMiddleware.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(cors(corOptions));
 app.use("/api/auth/user", userRoutes);
 app.use("/api/portfolio", PortfolioRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use(errMiddleware)
 const startServer = async () => {
     try {
 
