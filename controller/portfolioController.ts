@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai"
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiResponse } from "cloudinary";
 import { createRequire } from "node:module";
@@ -19,7 +19,7 @@ cloudinary.config({
 })
 console.log("Cloudinary Configured In Portfolio Controller")
 
-export const GeneratePortfolio = async (req: Request, res: Response) => {
+export const GeneratePortfolio = async (req: Request, res: Response, next:NextFunction) => {
     try {
         const userId = (req as any).id;
         const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -118,12 +118,9 @@ export const GeneratePortfolio = async (req: Request, res: Response) => {
             return portfolio;
         });
         res.status(200).json(newPortfolio);
-    } catch (error: any) {
-        console.error("Critical Generation Error", error);
-        res.status(500).json({
-            message: "Failed To Generate Portfolio.",
-            error: error.message
-        })
+    } catch(error){
+        next(error)
     }
 }
+
 
