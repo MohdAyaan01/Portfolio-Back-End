@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import { buffer } from "node:stream/consumers";
 import { prisma } from "../db/connectDB.js";
 import { Prisma } from "@prisma/client";
+import { AppError } from "../middleware/appError.js";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -24,10 +25,10 @@ export const GeneratePortfolio = async (req: Request, res: Response, next:NextFu
         const userId = (req as any).id;
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user || user.credits <= 0) {
-            return res.status(403).json({
-                message: "Insufficient credits. Please upgrade your plan.",
-                success: false
-            });
+            throw new AppError(
+                "InSufficient Credits. Please Upgrade Your Plan",
+                403
+            )
         }
         const { prompt, style } = req.body;
         const resumeFile = req.file;

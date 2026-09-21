@@ -57,7 +57,7 @@ export const SignUp = async (req: Request, res: Response) => {
         message: "Account Created SuccessFully...",
         success: true,
         user: userWithoutPassword,
-        token: token // <-- Make sure to return the token here
+        token: token 
       });
   } catch (err: any) {
     console.log(err);
