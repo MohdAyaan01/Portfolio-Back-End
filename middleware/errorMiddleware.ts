@@ -1,13 +1,13 @@
-import {} from "express"
+import {Request,Response,NextFunction} from "express"
 
-export const errMiddleware = {
+export const errMiddleware = (
     err: any,
     req: Request,
     res: Response,
     next: NextFunction,
-} => {
+ ) => {
     console.error(err);
-    res.status(statusCode || 500).json({
+    res.status(err.statusCode || 500).json({
         success: false,
         message: err.message || "Internal Server Error"    
     })
