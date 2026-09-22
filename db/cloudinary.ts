@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary-v2';
 import multer from 'multer'
 
 cloudinary.config({
@@ -9,7 +9,7 @@ cloudinary.config({
 });
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary: cloudinary as any,
   params: {
     folder: 'profoliox_uploads',
     allowed_formats: ['jpg', 'png', 'jpeg'],
