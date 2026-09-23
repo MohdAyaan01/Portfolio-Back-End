@@ -9,12 +9,12 @@ import userRoutes from "./routes/userRoutes.js";
 import PortfolioRoutes from "./routes/portfolioRoutes.js";
 import paymentRoutes from "./routes/razorpayRoutes.js"
 import { errMiddleware } from "./middleware/errorMiddleware.js";
-
+import { GlobalRateLimiter } from "./middleware/rateLimiter.js";
 import helmet from "helmet";
 
 const app = express();
 app.use(helmet());
-
+app.use(GlobalRateLimiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
