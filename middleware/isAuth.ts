@@ -1,6 +1,7 @@
 import type { Response, Request, NextFunction } from "express";
 
 import jwt from "jsonwebtoken";
+import { AppError } from "./appError.js";
 
 interface JWTPayload {
     userId: string
@@ -12,8 +13,7 @@ const isAuthenticated = async (req: Request, res: Response, next: NextFunction) 
         const token = authHeader && authHeader.split(' ')[1];
 
         if (!token || token === "null" || token === "undefined") {
-            console.log("Auth Failure: No token or invalid token format");
-            return res.status(401).json({ message: "User Not Authenticated..." });
+            throw new AppError("User Not Authenticated",401);
         }
 
         const decode = await jwt.verify(token, process.env.SECRET_KEY as string) as JWTPayload;
@@ -26,8 +26,8 @@ const isAuthenticated = async (req: Request, res: Response, next: NextFunction) 
         (req as any).id = decode.userId;
         next();
     } catch (err: any) {
-        console.error("Authentication Error:", err.message);
-        return res.status(401).json({ message: "Authentication Error", error: err.message });
+        console.error("Authentication Error",err.message);
+        next(new AppError("Invalid And Expired Token",401));
     }
 }
 export default isAuthenticated
