@@ -25,8 +25,10 @@ model Portfolio {
   title      String
   content    Json     // This will store the AI generated bio, skills, etc.
   templateId String?
-  userId     String
+  userId     String   
   user       User     @relation(fields: [userId], references: [id])
   createdAt  DateTime @default(now())
+
+  @@index([userId])
 }
 
