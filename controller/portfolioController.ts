@@ -7,6 +7,7 @@ import { buffer } from "node:stream/consumers";
 import { prisma } from "../db/connectDB.js";
 import { Prisma } from "@prisma/client";
 import { AppError } from "../middleware/appError.js";
+import { sendSuccess } from "../utils/apiResponse.js";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -118,7 +119,11 @@ export const GeneratePortfolio = async (req: Request, res: Response, next:NextFu
             });
             return portfolio;
         });
-        res.status(200).json(newPortfolio);
+        sendSuccess(
+            res,
+            "Portfolio Generated Successfully",
+            newPortfolio,
+        )
     } catch(error){
         next(error)
     }
