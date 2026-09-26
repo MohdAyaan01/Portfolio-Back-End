@@ -71,10 +71,7 @@ export const Login = async (req: Request, res: Response, next:NextFunction) => {
     const { email, password } = req.body as AuthBody;
 
     if (!email || !password) {
-      return res.status(400).json({
-        message: "All Fields Are Required...",
-        success: false,
-      });
+      throw new AppError("All Fields Are Required",400);
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
