@@ -1,7 +1,8 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from '../db/connectDB.js';
+import { AppError } from '../middleware/appError.js';
 
 interface AuthBody {
   name?: string,
@@ -65,7 +66,7 @@ export const SignUp = async (req: Request, res: Response) => {
   }
 }
 
-export const Login = async (req: Request, res: Response) => {
+export const Login = async (req: Request, res: Response, next:NextFunction) => {
   try {
     const { email, password } = req.body as AuthBody;
 
@@ -79,19 +80,13 @@ export const Login = async (req: Request, res: Response) => {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return res.status(400).json({
-        message: "Incorrect Email And Password...",
-        success: false,
-      });
+      throw new AppError("Incorrect Email And Passoword",401);
     }
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      return res.status(401).json({
-        message: "Incorrect Email And Password...",
-        success: false,
-      });
+      throw new AppError("Incorrect Email And Password",401);
     }
 
     const tokenData = {
@@ -130,8 +125,7 @@ export const Login = async (req: Request, res: Response) => {
 
 
   } catch (err: any) {
-    console.log(err);
-    res.status(500).json({ message: "Internal Server Error", success: false });
+    next(err);
   }
 };
 
