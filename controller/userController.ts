@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from '../db/connectDB.js';
 import { AppError } from '../middleware/appError.js';
+import { dmmfToRuntimeDataModel } from '@prisma/client/runtime/library';
 
 interface AuthBody {
   name?: string,
@@ -66,16 +67,16 @@ export const SignUp = async (req: Request, res: Response) => {
         httpOnly: true,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production"
-      });
-
-      return res.status(200).json({
-        success:true,
-        message:"Signup Successfully",
-        data:{
-          user:userWithoutPassword,
+      }).json({
+        success: true,
+        message: "SignUp SuccessFully",
+        data: {
+          user: userWithoutPassword,
           token,
         }
       })
+
+
 
   } catch (err: any) {
     console.log(err);
@@ -129,15 +130,15 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
         sameSite: "lax",
         maxAge: 24 * 60 * 60 * 1000,
         secure: process.env.NODE_ENV === "production"
-      })
-      return res.status(200).json({
+      }).json({
         success: true,
-        message:"Login SuccessFully",
-        data:{
-          user:userWithoutPassword,
+        message: "Login SuccessFully",
+        data: {
+          user: userWithoutPassword,
           token,
         }
       })
+
 
   } catch (err: any) {
     next(err);
