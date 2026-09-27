@@ -10,7 +10,11 @@ router.route("/logout").post(Logout);
 router.route("/google-login").post(googleAuth)
 router.get("/me", isAuthenticated, getMe);
 router.get("/history/:userId", getUserHistory);
-router.post("/signup",validate(SignUpSchema),SignUp);
+//router.post("/signup",validate(SignUpSchema),SignUp);
+router.post("/signup",(req,res,next)=>{
+    console.log("SignUp Route Hit");
+    next();
+},validate(SignUpSchema),SignUp)
 router.route("/login").post(validate(LoginSchema),Login);
 export default router
 ;

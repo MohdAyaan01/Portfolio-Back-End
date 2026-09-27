@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from '../db/connectDB.js';
 import { AppError } from '../middleware/appError.js';
-import { sendSuccess } from '../utils/apiResponse.js';
 
 interface AuthBody {
   name?: string,
@@ -12,15 +11,23 @@ interface AuthBody {
 }
 
 export const SignUp = async (req: Request, res: Response) => {
+  console.log("SIgnUp Controller Hit");
+
   try {
     const { name, email, password } = req.body as AuthBody;
     if (!name || !email || !password) return res.status(400).json({ message: "All Fields Are Required", success: false });
+    console.log("Before FInding User");
 
     const user = await prisma.user.findUnique({ where: { email } });
+    console.log("After Finding User");
+
     if (user) return res.status(400).json({ message: "User Already Exist...", success: false });
 
     const saltRounds = Number(process.env.SALT) || 10;
     const hashPassword = await bcrypt.hash(password, saltRounds);
+    console.log("After Hashing Password");
+    console.log("Before Creating User");
+
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -28,6 +35,9 @@ export const SignUp = async (req: Request, res: Response) => {
         password: hashPassword
       }
     })
+    console.log("After Creating User");
+
+    console.log("Before JWT");
 
     const userWithoutPassword = {
       _id: newUser.id,
@@ -36,6 +46,8 @@ export const SignUp = async (req: Request, res: Response) => {
       plan: newUser.plan,
       credits: newUser.credits
     };
+
+    console.log("After JWT");
 
     const tokenData = {
       userId: newUser.id,
@@ -54,40 +66,41 @@ export const SignUp = async (req: Request, res: Response) => {
         httpOnly: true,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production"
-      })
-      sendSuccess(
-        res,
-        "Login SuccessFully",
-        {
+      });
+
+      return res.status(200).json({
+        success:true,
+        message:"Signup Successfully",
+        data:{
           user:userWithoutPassword,
           token,
-        },
-        200
-      )
+        }
+      })
+
   } catch (err: any) {
     console.log(err);
     res.status(500).json({ message: "Internal Server Error", success: false });
   }
 }
 
-export const Login = async (req: Request, res: Response, next:NextFunction) => {
+export const Login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body as AuthBody;
 
     if (!email || !password) {
-      throw new AppError("All Fields Are Required",400);
+      throw new AppError("All Fields Are Required", 400);
     }
 
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      throw new AppError("Incorrect Email And Passoword",401);
+      throw new AppError("Incorrect Email And Passoword", 401);
     }
 
     const isPasswordMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      throw new AppError("Incorrect Email And Password",401);
+      throw new AppError("Incorrect Email And Password", 401);
     }
 
     const tokenData = {
@@ -117,13 +130,14 @@ export const Login = async (req: Request, res: Response, next:NextFunction) => {
         maxAge: 24 * 60 * 60 * 1000,
         secure: process.env.NODE_ENV === "production"
       })
-      .json({
-        message: "Google Login Successfully",
+      return res.status(200).json({
         success: true,
-        user: userWithoutPassword,
-        token: token 
-      });
-
+        message:"Login SuccessFully",
+        data:{
+          user:userWithoutPassword,
+          token,
+        }
+      })
 
   } catch (err: any) {
     next(err);
