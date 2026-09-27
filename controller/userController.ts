@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from '../db/connectDB.js';
 import { AppError } from '../middleware/appError.js';
+import { sendSuccess } from '../utils/apiResponse.js';
 
 interface AuthBody {
   name?: string,
@@ -54,12 +55,15 @@ export const SignUp = async (req: Request, res: Response) => {
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production"
       })
-      .json({
-        message: "Account Created SuccessFully...",
-        success: true,
-        user: userWithoutPassword,
-        token: token 
-      });
+      sendSuccess(
+        res,
+        "Login SuccessFully",
+        {
+          user:userWithoutPassword,
+          token,
+        },
+        200
+      )
   } catch (err: any) {
     console.log(err);
     res.status(500).json({ message: "Internal Server Error", success: false });
