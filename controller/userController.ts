@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from '../db/connectDB.js';
 import { AppError } from '../middleware/appError.js';
+import { sendSuccess } from '../utils/apiResponse.js';
 
 interface AuthBody {
   name?: string,
@@ -10,7 +11,7 @@ interface AuthBody {
   password: string
 }
 
-export const SignUp = async (req: Request, res: Response) => {
+export const SignUp = async (req: Request, res: Response, next:NextFunction) => {
   
   try {
     const { name, email, password } = req.body as AuthBody;
@@ -54,27 +55,26 @@ export const SignUp = async (req: Request, res: Response) => {
     );
 
 
-    return res
+      res
       .status(200)
       .cookie("token", token, {
         maxAge: 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production"
-      }).json({
-        success: true,
-        message: "SignUp SuccessFully",
-        data: {
-          user: userWithoutPassword,
-          token,
-        }
       })
-
-
+      return sendSuccess(
+        res,
+        "SignUp SuccessFully",
+        {
+          user:userWithoutPassword,
+          token,
+        },
+        200
+      )
 
   } catch (err: any) {
-    console.log(err);
-    res.status(500).json({ message: "Internal Server Error", success: false });
+    next(err);
   }
 }
 
@@ -117,22 +117,23 @@ export const Login = async (req: Request, res: Response, next: NextFunction) => 
       credits: user.credits
     };
 
-    return res
+      res
       .status(200)
       .cookie("token", token, {
         httpOnly: true,
         sameSite: "lax",
         maxAge: 24 * 60 * 60 * 1000,
         secure: process.env.NODE_ENV === "production"
-      }).json({
-        success: true,
-        message: "Login SuccessFully",
-        data: {
-          user: userWithoutPassword,
-          token,
-        }
       })
-
+      return sendSuccess(
+        res,
+        "Login SuccessFully",
+        {
+          user:userWithoutPassword,
+          token,
+        },
+        200
+      )
 
   } catch (err: any) {
     next(err);
