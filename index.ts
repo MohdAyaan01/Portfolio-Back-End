@@ -28,6 +28,12 @@ const corOptions: CorsOptions = {
 };
 app.use(cors(corOptions));
 
+app.get("/health",(req,res)=>{
+    res.status(200).json({
+        success:true,
+        message:"Serve is Healthy"
+    })
+})
 app.use("/api/auth/user", userRoutes);
 app.use("/api/portfolio", PortfolioRoutes);
 app.use("/api/payment", paymentRoutes);
