@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from '../db/connectDB.js';
 import { AppError } from '../middleware/appError.js';
-import { dmmfToRuntimeDataModel } from '@prisma/client/runtime/library';
 
 interface AuthBody {
   name?: string,
@@ -12,22 +11,20 @@ interface AuthBody {
 }
 
 export const SignUp = async (req: Request, res: Response) => {
-  console.log("SIgnUp Controller Hit");
-
+  
   try {
     const { name, email, password } = req.body as AuthBody;
     if (!name || !email || !password) return res.status(400).json({ message: "All Fields Are Required", success: false });
-    console.log("Before FInding User");
+  
 
     const user = await prisma.user.findUnique({ where: { email } });
-    console.log("After Finding User");
+    
 
     if (user) return res.status(400).json({ message: "User Already Exist...", success: false });
 
     const saltRounds = Number(process.env.SALT) || 10;
     const hashPassword = await bcrypt.hash(password, saltRounds);
-    console.log("After Hashing Password");
-    console.log("Before Creating User");
+ 
 
     const newUser = await prisma.user.create({
       data: {
@@ -36,9 +33,7 @@ export const SignUp = async (req: Request, res: Response) => {
         password: hashPassword
       }
     })
-    console.log("After Creating User");
-
-    console.log("Before JWT");
+  
 
     const userWithoutPassword = {
       _id: newUser.id,
@@ -48,8 +43,7 @@ export const SignUp = async (req: Request, res: Response) => {
       credits: newUser.credits
     };
 
-    console.log("After JWT");
-
+   
     const tokenData = {
       userId: newUser.id,
     };
