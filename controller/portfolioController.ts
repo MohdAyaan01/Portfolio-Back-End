@@ -8,6 +8,7 @@ import { prisma } from "../db/connectDB.js";
 import { Prisma } from "@prisma/client";
 import { AppError } from "../middleware/appError.js";
 import { sendSuccess } from "../utils/apiResponse.js";
+import { GeneratePortfolioOutputSchema } from "../validation/portfolioValidation.js";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -102,8 +103,10 @@ export const GeneratePortfolio = async (req: Request, res: Response, next:NextFu
             throw new Error("AI Failed to return a valid JSON Structure");
         }
         const jsonString = text.slice(jsonStart, jsonEnd);
-        const ParsedPortfolio = JSON.parse(jsonString);
-
+        const ParsedPortfolio = GeneratePortfolioOutputSchema.parse(
+            JSON.parse(jsonString)
+        )
+    
         const newPortfolio = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             const portfolio = await tx.portfolio.create({
                 data: {
