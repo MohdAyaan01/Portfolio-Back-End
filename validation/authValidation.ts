@@ -10,3 +10,13 @@ export const LoginSchema = z.object({
     email: z.string().email("Invalid Email Password"),
     password: z.string().min(6,"Password Must Be Atleast 6 Characters")   
 })
+
+export const GeneratePortfolioSchema = z.object({
+    prompt: z.string().min(1,"Prompt Is Required"),
+    style: z.enum([
+        "Professional",
+        "Creative",
+        "Minimalist",
+        "Bold",
+    ]).optional()
+})
