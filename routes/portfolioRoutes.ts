@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { GeneratePortfolio } from '../controller/portfolioController.js';
+import { GeneratePortfolio, GetUserPortfolios } from '../controller/portfolioController.js';
 import multer from 'multer';
 import { upload } from '../db/cloudinary.js';
 import { handleUpload } from '../controller/uploadController.js';
@@ -26,4 +26,5 @@ const memoryUpload = multer({ storage: multer.memoryStorage(),
  });
 router.post('/upload',isAuthenticated, upload.single('image'), handleUpload);
 router.post('/generate',isAuthenticated,validate(GeneratePortfolioSchema),memoryUpload.single('resume'),GeneratePortfolio);
+router.get("/",isAuthenticated,GetUserPortfolios);
 export default router;

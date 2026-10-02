@@ -145,3 +145,28 @@ export const GeneratePortfolio = async (req: Request, res: Response, next:NextFu
 }
 
 
+export const GetUserPortfolios = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try{
+        const userId = (req as any).id;
+
+        const Portfolios = await prisma.portfolio.findMany({
+            where:{
+                userId,
+            },
+            orderBy:{
+                createdAt:"desc",
+            },
+        });
+        return sendSuccess(
+            res,
+            "Portfolios fetched Successfully",
+            Portfolios
+        );
+    }catch(error){
+        next(error);
+    }
+}
