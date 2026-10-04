@@ -205,3 +205,31 @@ export const GetUserPortfolios = async (
         next(error);
     }
 }
+
+export const GetPortfolioByID = async(
+    req:Request,
+    res:Response,
+    next:NextFunction
+) => {
+    try{
+        const userId = (req as any).id;
+        const {id} = req.params;
+
+        const portfolio = await prisma.portfolio.findFirst({
+            where:{
+                id,
+                userId,
+            }
+        })
+        if(!portfolio){
+            throw new AppError("Portfolio Not Found",404);
+        }
+        return sendSuccess(
+            res,
+            "Portfolio Fetched Successfully",
+            portfolio
+        );
+    }catch(error){
+        next(error);
+    }
+}
