@@ -214,7 +214,9 @@ export const GetPortfolioByID = async(
     try{
         const userId = (req as any).id;
         const {id} = req.params;
-
+        if(typeof id !== "string"){
+            throw new AppError("Invalid POrtfolio ID",400)
+        }
         const portfolio = await prisma.portfolio.findFirst({
             where:{
                 id,
