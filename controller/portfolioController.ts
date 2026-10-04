@@ -23,7 +23,7 @@ cloudinary.config({
 })
 console.log("Cloudinary Configured In Portfolio Controller")
 
-export const GeneratePortfolio = async (req: Request, res: Response, next:NextFunction) => {
+export const GeneratePortfolio = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = (req as any).id;
         const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -50,9 +50,11 @@ export const GeneratePortfolio = async (req: Request, res: Response, next:NextFu
                 console.error("Text Extraction Error:", extractRawError);
             }
         }
-        const model = GenAi.getGenerativeModel({ model: "gemini-2.5-flash",generationConfig: {
-        responseMimeType: "application/json",
-    } });
+        const model = GenAi.getGenerativeModel({
+            model: "gemini-2.5-flash", generationConfig: {
+                responseMimeType: "application/json",
+            }
+        });
 
         const styleInstruction = {
             Professional: "Maintain a formal, corporate tone. Focus on clear achievements and industry-standard terminology.",
@@ -106,12 +108,12 @@ export const GeneratePortfolio = async (req: Request, res: Response, next:NextFu
         const jsonString = text.slice(jsonStart, jsonEnd);
 
         let ParsedPortfolio;
-        try{
+        try {
             ParsedPortfolio = GeneratePortfolioOutputSchema.parse(
                 JSON.parse(jsonString)
             );
-        }catch(error){
-            if(error instanceof ZodError){
+        } catch (error) {
+            if (error instanceof ZodError) {
                 throw new AppError(
                     "AI Generated An Invalid Portfolio Structure",
                     502,
@@ -139,7 +141,7 @@ export const GeneratePortfolio = async (req: Request, res: Response, next:NextFu
             "Portfolio Generated Successfully",
             newPortfolio,
         )
-    } catch(error){
+    } catch (error) {
         next(error)
     }
 }
@@ -150,14 +152,14 @@ export const GetUserPortfolios = async (
     res: Response,
     next: NextFunction
 ) => {
-    try{
+    try {
         const userId = (req as any).id;
-        const page = Math.max(Number(req.query.page) || 1,1);
+        const page = Math.max(Number(req.query.page) || 1, 1);
         const reqlimit = Number(req.query.limit) || 10;
-        const limit = Math.min(Math.max(reqlimit,1),50);
-        const skip = (page-1)*limit;
+        const limit = Math.min(Math.max(reqlimit, 1), 50);
+        const skip = (page - 1) * limit;
 
-        const Portfolios = await prisma.portfolio.findMany({
+        /*const Portfolios = await prisma.portfolio.findMany({
             where:{
                 userId,
             },
@@ -166,13 +168,40 @@ export const GetUserPortfolios = async (
             },
             skip,
             take:limit
-        });
+        });*/
+        const [Portfolios, Total] = await Promise.all([
+
+            prisma.portfolio.findMany({
+                where: {
+                    userId,
+                },
+                orderBy: {
+                    createdAt: "desc",
+                },
+                skip,
+                take: limit,
+            }),
+            prisma.portfolio.count({
+                where: {
+                    userId,
+                }
+            })
+        ])
+        const totalPages = Math.ceil(Total / limit)
         return sendSuccess(
             res,
             "Portfolios fetched Successfully",
-            Portfolios
+            {
+                Portfolios,
+                pagination: {
+                    page,
+                    limit,
+                    Total,
+                    totalPages
+                }
+            }
         );
-    }catch(error){
+    } catch (error) {
         next(error);
     }
 }
