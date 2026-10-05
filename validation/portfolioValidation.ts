@@ -23,3 +23,9 @@ export const GeneratePortfolioOutputSchema = z.object({
         github: z.string(),
     }),
 })
+
+export const updatePortfolioSchema = z.object({
+    title: z.string().min(1,"Title Is Required"),
+    content: z.record(z.string(),z.any()),
+    templateId: z.string().optional(),
+})

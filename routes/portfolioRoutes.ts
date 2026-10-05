@@ -6,6 +6,7 @@ import { handleUpload } from '../controller/uploadController.js';
 import isAuthenticated from '../middleware/isAuth.js';
 import {validate} from "../validation/validate.js";
 import {GeneratePortfolioSchema} from "../validation/authValidation.js"
+import { updatePortfolioSchema } from '../validation/portfolioValidation.js';
 
 const router = Router();
 const memoryUpload = multer({ storage: multer.memoryStorage(),
@@ -28,6 +29,6 @@ router.post('/upload',isAuthenticated, upload.single('image'), handleUpload);
 router.post('/generate',isAuthenticated,validate(GeneratePortfolioSchema),memoryUpload.single('resume'),GeneratePortfolio);
 router.get("/",isAuthenticated,GetUserPortfolios);
 router.get("/:id",isAuthenticated,GetPortfolioByID);
-router.put("/:id",isAuthenticated,UpdatePortfolio)
+router.put("/:id",isAuthenticated,validate(updatePortfolioSchema),UpdatePortfolio)
 router.delete("/:id",isAuthenticated,DeletePortfolio)
 export default router;
