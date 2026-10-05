@@ -10,6 +10,7 @@ import { AppError } from "../middleware/appError.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 import { GeneratePortfolioOutputSchema } from "../validation/portfolioValidation.js";
 import { ZodError } from "zod";
+import { ne } from "zod/v4/locales";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -222,5 +223,82 @@ export const GetPortfolioByID = async(
         );
     }catch(error){
         next(error);
+    }
+}
+export const UpdatePortfolio = async(
+    req:Request,
+    res:Response,
+    next:NextFunction
+)=>{
+    try{
+        const {userId} = (req as any).id;
+        const {id} = req.params;
+        if(typeof id !== "string"){
+            throw new AppError("Invalid Portfolio ID",400)
+        };
+        const {title,content,templateId} = req.body;
+        const Portfolio = await prisma.portfolio.findFirst({
+            where:{
+                id,
+                userId,
+            }
+        });
+        if(!Portfolio){
+            throw new AppError("Portfolio Not Found",404);
+        }
+        const updatePortfolio = await prisma.portfolio.update({
+            where:{
+                id:Portfolio.id,
+            },
+            data:{
+                title,
+                content,
+                templateId
+            },
+        });
+        return sendSuccess(
+            res,
+            "Portfolio Updated Successfully",
+            updatePortfolio
+        );
+    }catch(error){
+        next(error);
+    }
+}
+
+export const DeletePortfolio = async(
+    req:Request,
+    res:Response,
+    next:NextFunction
+)=>{
+    try{
+          const {userId} = (req as any).id;
+        const {id} = req.params;
+        if(typeof id !== "string"){
+            throw new AppError("Invalid Portfolio ID",400)
+        };
+        if(typeof id !== "string"){
+            throw new AppError("Invalid Portfolio Id",400)
+        }
+        const portfolio = await prisma.portfolio.findFirst({
+            where:{
+                id,
+                userId,
+            }
+        });
+        if(!portfolio){
+            throw new AppError("Portfolio Not Found",404);
+        }
+        await prisma.portfolio.delete({
+            where:{
+                id:portfolio.id,
+            }
+        });
+        return sendSuccess(
+            res,
+            "Portfolio Deleted Successfully"
+        )
+    }catch(error){
+        next(error)
     }
 }
