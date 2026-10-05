@@ -158,17 +158,6 @@ export const GetUserPortfolios = async (
         const reqlimit = Number(req.query.limit) || 10;
         const limit = Math.min(Math.max(reqlimit, 1), 50);
         const skip = (page - 1) * limit;
-
-        /*const Portfolios = await prisma.portfolio.findMany({
-            where:{
-                userId,
-            },
-            orderBy:{
-                createdAt:"desc",
-            },
-            skip,
-            take:limit
-        });*/
         const [Portfolios, Total] = await Promise.all([
 
             prisma.portfolio.findMany({
