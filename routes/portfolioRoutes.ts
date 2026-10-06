@@ -7,7 +7,6 @@ import isAuthenticated from '../middleware/isAuth.js';
 import {validate} from "../validation/validate.js";
 import {GeneratePortfolioSchema} from "../validation/authValidation.js"
 import { updatePortfolioSchema } from '../validation/portfolioValidation.js';
-
 const router = Router();
 const memoryUpload = multer({ storage: multer.memoryStorage(),
     limits:{
@@ -24,7 +23,7 @@ const memoryUpload = multer({ storage: multer.memoryStorage(),
             cb(new Error("Only PDF and DOCX files are allowed"))
         }
     }
- });
+});
 router.post('/upload',isAuthenticated, upload.single('image'), handleUpload);
 router.post('/generate',isAuthenticated,validate(GeneratePortfolioSchema),memoryUpload.single('resume'),GeneratePortfolio);
 router.get("/",isAuthenticated,GetUserPortfolios);

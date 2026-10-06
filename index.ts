@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { EnvSchema } from "./validation/envValidation.js";
 import express from "express";
 import { prisma } from "./db/connectDB.js";
 
@@ -13,10 +14,11 @@ import { GlobalRateLimiter } from "./middleware/rateLimiter.js";
 import helmet from "helmet";
 
 const app = express();
+EnvSchema.parse(process.env);
 app.use(helmet());
 app.use(GlobalRateLimiter);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({limit:"1mb"}));
+app.use(express.urlencoded({ extended: true, limit:"1mb" }));
 
 
 const corOptions: CorsOptions = {
