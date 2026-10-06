@@ -97,10 +97,10 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
 
             WARNING: You MUST ONLY return raw JSON. No markdown blocks, no triple backticks, and absolutely no surrounding text.
         `;
-        
+        let text: string 
         const Result = await model.generateContent(MasterPrompt);
         const response = await Result.response;
-        const text = response.text();
+        text = response.text();
 
         const jsonStart = text.indexOf('{');
         const jsonEnd = text.lastIndexOf('}') + 1;
@@ -133,10 +133,25 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
                     templateId: style || "Professional"
                 }
             });
-            await tx.user.update({
-                where: { id: userId },
-                data: { credits: { decrement: 1 } }
+            const creditUpdate = await tx.user.updateMany({
+                where:{
+                    id:userId,
+                    credits:{
+                        gt:0,
+                    },
+                },
+                data:{
+                    credits:{
+                        decrement:1
+                    }
+                }
             });
+            if(creditUpdate.count === 0){
+                throw new AppError(
+                    "Insufficients Credits. Please Upgrade Your Plan",
+                    403
+                )
+            }
             return portfolio;
         });
         sendSuccess(
