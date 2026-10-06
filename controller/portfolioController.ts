@@ -11,6 +11,7 @@ import { sendSuccess } from "../utils/apiResponse.js";
 import { GeneratePortfolioOutputSchema } from "../validation/portfolioValidation.js";
 import { ZodError } from "zod";
 import { ne } from "zod/v4/locales";
+import { logger } from "../utils/logger.js";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -22,7 +23,7 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY as string,
     api_secret: process.env.CLOUDINARY_API_SECRET as string,
 })
-console.log("Cloudinary Configured In Portfolio Controller")
+logger.info("Cloudinary Configured In Portfolio Controller")
 
 export const GeneratePortfolio = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -48,7 +49,7 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
                     ResumeText = result.value;
                 }
             } catch (extractRawError) {
-                console.error("Text Extraction Error:", extractRawError);
+                logger.error("Text Extraction Error:", extractRawError);
             }
         }
         const model = GenAi.getGenerativeModel({
@@ -96,6 +97,7 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
 
             WARNING: You MUST ONLY return raw JSON. No markdown blocks, no triple backticks, and absolutely no surrounding text.
         `;
+        
         const Result = await model.generateContent(MasterPrompt);
         const response = await Result.response;
         const text = response.text();

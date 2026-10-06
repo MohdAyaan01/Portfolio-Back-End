@@ -11,6 +11,7 @@ import PortfolioRoutes from "./routes/portfolioRoutes.js";
 import paymentRoutes from "./routes/razorpayRoutes.js"
 import { errMiddleware } from "./middleware/errorMiddleware.js";
 import { GlobalRateLimiter } from "./middleware/rateLimiter.js";
+import { logger } from "./utils/logger.js";
 import helmet from "helmet";
 
 const app = express();
@@ -44,14 +45,14 @@ const startServer = async () => {
     try {
 
         await prisma.$connect();
-        console.log("Database Connected Successfully");
+        logger.info("Database Connected Successfully");
 
         const PORT = process.env.PORT || 5000;
         app.listen(PORT, () => {
-            console.log(`Server Running At PORT ${PORT}`);
+            logger.info(`Server Running At PORT ${PORT}`);
         });
     } catch (error) {
-        console.error("Failed to start server:", error);
+        logger.error("Failed to start server:", error);
     }
 };
 
