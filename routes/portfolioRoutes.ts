@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { GeneratePortfolio, GetUserPortfolios,GetPortfolioByID,UpdatePortfolio, DeletePortfolio } from '../controller/portfolioController.js';
-import multer from 'multer';
+import multer, { MulterError } from 'multer';
 import { upload } from '../db/cloudinary.js';
 import { handleUpload } from '../controller/uploadController.js';
 import isAuthenticated from '../middleware/isAuth.js';
 import {validate} from "../validation/validate.js";
 import {GeneratePortfolioSchema} from "../validation/authValidation.js"
 import { updatePortfolioSchema } from '../validation/portfolioValidation.js';
+import { GenerateRateLimiter } from '../middleware/rateLimiter.js';
 const router = Router();
 const memoryUpload = multer({ storage: multer.memoryStorage(),
     limits:{
@@ -20,12 +21,12 @@ const memoryUpload = multer({ storage: multer.memoryStorage(),
         if(AllowedTypes.includes(file.mimetype)){
             cb(null,true);
         }else{
-            cb(new Error("Only PDF and DOCX files are allowed"))
+            cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE","resume"))
         }
     }
 });
 router.post('/upload',isAuthenticated, upload.single('image'), handleUpload);
-router.post('/generate',isAuthenticated,validate(GeneratePortfolioSchema),memoryUpload.single('resume'),GeneratePortfolio);
+router.post('/generate',isAuthenticated,GenerateRateLimiter,validate(GeneratePortfolioSchema),memoryUpload.single('resume'),GeneratePortfolio);
 router.get("/",isAuthenticated,GetUserPortfolios);
 router.get("/:id",isAuthenticated,GetPortfolioByID);
 router.put("/:id",isAuthenticated,validate(updatePortfolioSchema),UpdatePortfolio)
