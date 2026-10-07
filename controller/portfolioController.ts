@@ -97,19 +97,23 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
 
             WARNING: You MUST ONLY return raw JSON. No markdown blocks, no triple backticks, and absolutely no surrounding text.
         `;
-        let text: string 
+        let text: string
         const Result = await model.generateContent(MasterPrompt);
         const response = await Result.response;
         text = response.text();
 
-        const jsonStart = text.indexOf('{');
+        /*const jsonStart = text.indexOf('{');
         const jsonEnd = text.lastIndexOf('}') + 1;
 
         if (jsonStart === -1 || jsonEnd === 0) {
             throw new Error("AI Failed to return a valid JSON Structure");
         }
-        const jsonString = text.slice(jsonStart, jsonEnd);
+        const jsonString = text.slice(jsonStart, jsonEnd);*/
 
+        const jsonString = text
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
         let ParsedPortfolio;
         try {
             ParsedPortfolio = GeneratePortfolioOutputSchema.parse(
@@ -134,19 +138,19 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
                 }
             });
             const creditUpdate = await tx.user.updateMany({
-                where:{
-                    id:userId,
-                    credits:{
-                        gt:0,
+                where: {
+                    id: userId,
+                    credits: {
+                        gt: 0,
                     },
                 },
-                data:{
-                    credits:{
-                        decrement:1
+                data: {
+                    credits: {
+                        decrement: 1
                     }
                 }
             });
-            if(creditUpdate.count === 0){
+            if (creditUpdate.count === 0) {
                 throw new AppError(
                     "Insufficients Credits. Please Upgrade Your Plan",
                     403
@@ -213,61 +217,61 @@ export const GetUserPortfolios = async (
     }
 }
 
-export const GetPortfolioByID = async(
-    req:Request,
-    res:Response,
-    next:NextFunction
+export const GetPortfolioByID = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
 ) => {
-    try{
+    try {
         const userId = (req as any).id;
-        const {id} = req.params;
-        if(typeof id !== "string"){
-            throw new AppError("Invalid POrtfolio ID",400)
+        const { id } = req.params;
+        if (typeof id !== "string") {
+            throw new AppError("Invalid POrtfolio ID", 400)
         }
         const portfolio = await prisma.portfolio.findFirst({
-            where:{
+            where: {
                 id,
                 userId,
             }
         })
-        if(!portfolio){
-            throw new AppError("Portfolio Not Found",404);
+        if (!portfolio) {
+            throw new AppError("Portfolio Not Found", 404);
         }
         return sendSuccess(
             res,
             "Portfolio Fetched Successfully",
             portfolio
         );
-    }catch(error){
+    } catch (error) {
         next(error);
     }
 }
-export const UpdatePortfolio = async(
-    req:Request,
-    res:Response,
-    next:NextFunction
-)=>{
-    try{
-        const {userId} = (req as any).id;
-        const {id} = req.params;
-        if(typeof id !== "string"){
-            throw new AppError("Invalid Portfolio ID",400)
+export const UpdatePortfolio = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { userId } = (req as any).id;
+        const { id } = req.params;
+        if (typeof id !== "string") {
+            throw new AppError("Invalid Portfolio ID", 400)
         };
-        const {title,content,templateId} = req.body;
+        const { title, content, templateId } = req.body;
         const Portfolio = await prisma.portfolio.findFirst({
-            where:{
+            where: {
                 id,
                 userId,
             }
         });
-        if(!Portfolio){
-            throw new AppError("Portfolio Not Found",404);
+        if (!Portfolio) {
+            throw new AppError("Portfolio Not Found", 404);
         }
         const updatePortfolio = await prisma.portfolio.update({
-            where:{
-                id:Portfolio.id,
+            where: {
+                id: Portfolio.id,
             },
-            data:{
+            data: {
                 title,
                 content,
                 templateId
@@ -278,44 +282,44 @@ export const UpdatePortfolio = async(
             "Portfolio Updated Successfully",
             updatePortfolio
         );
-    }catch(error){
+    } catch (error) {
         next(error);
     }
 }
 
-export const DeletePortfolio = async(
-    req:Request,
-    res:Response,
-    next:NextFunction
-)=>{
-    try{
-          const {userId} = (req as any).id;
-        const {id} = req.params;
-        if(typeof id !== "string"){
-            throw new AppError("Invalid Portfolio ID",400)
+export const DeletePortfolio = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { userId } = (req as any).id;
+        const { id } = req.params;
+        if (typeof id !== "string") {
+            throw new AppError("Invalid Portfolio ID", 400)
         };
-        if(typeof id !== "string"){
-            throw new AppError("Invalid Portfolio Id",400)
+        if (typeof id !== "string") {
+            throw new AppError("Invalid Portfolio Id", 400)
         }
         const portfolio = await prisma.portfolio.findFirst({
-            where:{
+            where: {
                 id,
                 userId,
             }
         });
-        if(!portfolio){
-            throw new AppError("Portfolio Not Found",404);
+        if (!portfolio) {
+            throw new AppError("Portfolio Not Found", 404);
         }
         await prisma.portfolio.delete({
-            where:{
-                id:portfolio.id,
+            where: {
+                id: portfolio.id,
             }
         });
         return sendSuccess(
             res,
             "Portfolio Deleted Successfully"
         )
-    }catch(error){
+    } catch (error) {
         next(error)
     }
 }
