@@ -41,6 +41,7 @@ app.use("/api/auth/user", userRoutes);
 app.use("/api/portfolio", PortfolioRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use(errMiddleware)
+let server:ReturnType<typeof app.listen>
 const startServer = async () => {
     try {
 
@@ -48,7 +49,7 @@ const startServer = async () => {
         logger.info("Database Connected Successfully");
 
         const PORT = process.env.PORT || 5000;
-        app.listen(PORT, () => {
+        server = app.listen(PORT, () => {
             logger.info(`Server Running At PORT ${PORT}`);
         });
     } catch (error) {
@@ -57,3 +58,15 @@ const startServer = async () => {
 };
 
 startServer();
+const shutdown = async(signal:string)=>{
+    logger.info(`${signal}received Shutting Down Gracefully`);
+    server.close(async()=>{
+        await prisma.$disconnect();
+
+        logger.info("Server And Database Connection Failed");
+        process.exit(0);
+    })
+}
+
+process.on("SIGINT",()=>shutdown("SIGINT"));
+process.on("SIGTERM",()=>shutdown("SIGTERM"));

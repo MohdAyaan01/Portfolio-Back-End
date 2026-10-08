@@ -27,6 +27,12 @@ export const errMiddleware = (
                     success:false,
                     message: "Related Record Not Exist",
                 });
+            case "P1001":
+            case "P1017":
+                return res.status(503).json({
+                    success: false,
+                    message: "Database Services Is Currently unavailable"
+                })       
             default:
                 return res.status(400).json({
                     success: false,
