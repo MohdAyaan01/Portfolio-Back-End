@@ -30,5 +30,6 @@ model Portfolio {
   createdAt  DateTime @default(now())
 
   @@index([userId])
+  @@index([userId, createdAt(sort:Desc)])
 }
 
