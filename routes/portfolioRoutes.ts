@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router} from 'express';
 import { GeneratePortfolio, GetUserPortfolios,GetPortfolioByID,UpdatePortfolio, DeletePortfolio } from '../controller/portfolioController.js';
 import multer, { MulterError } from 'multer';
 import { upload } from '../db/cloudinary.js';
@@ -8,6 +8,7 @@ import {validate} from "../validation/validate.js";
 import {GeneratePortfolioSchema} from "../validation/authValidation.js"
 import { updatePortfolioSchema } from '../validation/portfolioValidation.js';
 import { GenerateRateLimiter } from '../middleware/rateLimiter.js';
+import type { Request,Response,NextFunction } from 'express';
 const router = Router();
 const memoryUpload = multer({ storage: multer.memoryStorage(),
     limits:{
@@ -25,8 +26,8 @@ const memoryUpload = multer({ storage: multer.memoryStorage(),
         }
     }
 });
-router.post('/upload',isAuthenticated, upload.single('image'), handleUpload);
-router.post('/generate',isAuthenticated,GenerateRateLimiter,validate(GeneratePortfolioSchema),memoryUpload.single('resume'),GeneratePortfolio);
+router.post("/upload",isAuthenticated, upload.single("image"), handleUpload);
+router.post("/generate",isAuthenticated,GenerateRateLimiter,memoryUpload.single("resume"),validate(GeneratePortfolioSchema),GeneratePortfolio);
 router.get("/",isAuthenticated,GetUserPortfolios);
 router.get("/:id",isAuthenticated,GetPortfolioByID);
 router.put("/:id",isAuthenticated,validate(updatePortfolioSchema),UpdatePortfolio)
