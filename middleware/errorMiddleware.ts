@@ -10,6 +10,18 @@ export const errMiddleware = (
     next: NextFunction,
  ) => {
     logger.error(err);
+    if(err instanceof multer.MulterError){
+        return res.status(400).json({
+            success:false,
+            message:err.message
+        });
+    }
+    if(err.message === "Only PDF And DOCX Files Are Allowed"){
+        return res.status(400).json({
+            success:false,
+            message:err.message
+        })
+    }
     if(err instanceof Prisma.PrismaClientKnownRequestError){
         switch(err.code){
             case "P2002":
