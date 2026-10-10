@@ -2,6 +2,7 @@ import type {Request,Response,NextFunction} from "express"
 import multer from "multer";
 import { logger } from "../utils/logger.js";
 import {Prisma} from "@prisma/client"
+import { success } from "zod";
 
 export const errMiddleware = (
     err: any,
@@ -46,14 +47,16 @@ export const errMiddleware = (
                     message: "Database Services Is Currently unavailable"
                 })       
             default:
-                return res.status(400).json({
+                return res.status(500).json({
                     success: false,
                     message: "Database Operation Failed",
                 })        
         }
     }
-    res.status(err.statusCode || 500).json({
-        success: false,
-        message: err.message || "Internal Server Error"    
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        success:false,
+        message:
+        statusCode>=500?"Internal Server Error":err.message || "Request Failed"
     })
 }

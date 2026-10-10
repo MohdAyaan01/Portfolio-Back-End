@@ -11,9 +11,9 @@ const isAuthenticated = async (req: Request, res: Response, next: NextFunction) 
     try {
 
         const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(' ')[1];
+        const token = authHeader?.startsWith("Bearer")?authHeader.slice(7):null
 
-        if (!token || token === "null" || token === "undefined") {
+        if (!token) {
             throw new AppError("User Not Authenticated",401);
         }
 
@@ -26,8 +26,8 @@ const isAuthenticated = async (req: Request, res: Response, next: NextFunction) 
         logger.info("Auth Success: User authenticated with ID:", decode.userId);
         (req as any).id = decode.userId;
         next();
-    } catch (err: any) {
-        logger.error("Authentication Error",err.message);
+    } catch (err: unknown) {
+        logger.error("Authentication Error");
         next(new AppError("Invalid And Expired Token",401));
     }
 }
