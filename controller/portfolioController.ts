@@ -98,18 +98,16 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
             WARNING: You MUST ONLY return raw JSON. No markdown blocks, no triple backticks, and absolutely no surrounding text.
         `;
         let text: string
+        try{
         const Result = await model.generateContent(MasterPrompt);
         const response = await Result.response;
         text = response.text();
-
-        /*const jsonStart = text.indexOf('{');
-        const jsonEnd = text.lastIndexOf('}') + 1;
-
-        if (jsonStart === -1 || jsonEnd === 0) {
-            throw new Error("AI Failed to return a valid JSON Structure");
+        }catch(error){
+            logger.error("Gemini API Error",{error});
+            throw new AppError(
+                "AI Service is currently unavailable. Please Try Again Later ",503
+            )
         }
-        const jsonString = text.slice(jsonStart, jsonEnd);*/
-
         const jsonString = text
             .replace(/```json/g, "")
             .replace(/```/g, "")
@@ -129,14 +127,6 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
             throw error;
         }
         const newPortfolio = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-            const portfolio = await tx.portfolio.create({
-                data: {
-                    userId: (req as any).id,
-                    title: ParsedPortfolio.fullName || "My Portfolio",
-                    content: ParsedPortfolio,
-                    templateId: style || "Professional"
-                }
-            });
             const creditUpdate = await tx.user.updateMany({
                 where: {
                     id: userId,
@@ -156,6 +146,14 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
                     403
                 )
             }
+            const portfolio = await tx.portfolio.create({
+                data: {
+                    userId: (req as any).id,
+                    title: ParsedPortfolio.fullName || "My Portfolio",
+                    content: ParsedPortfolio,
+                    templateId: style || "Professional"
+                }
+            });
             return portfolio;
         });
         sendSuccess(
