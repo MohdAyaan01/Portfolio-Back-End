@@ -3,14 +3,12 @@ import type { Request, Response, NextFunction } from "express";
 import { v2 as cloudinary } from "cloudinary";
 import type { UploadApiResponse } from "cloudinary";
 import { createRequire } from "node:module";
-import { buffer } from "node:stream/consumers";
 import { prisma } from "../db/connectDB.js";
 import { Prisma } from "@prisma/client";
 import { AppError } from "../middleware/appError.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 import { GeneratePortfolioOutputSchema } from "../validation/portfolioValidation.js";
 import { ZodError } from "zod";
-import { ne } from "zod/v4/locales";
 import { logger } from "../utils/logger.js";
 const require = createRequire(import.meta.url);
 const pdf = require("pdf-parse");
@@ -88,14 +86,62 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
         TASK:
         Based on the provided resume and instructions, generate a perfect, production-ready JSON object representing the portfolio content.
             
-            THE JSON MUST STRICTLY INCLUDE:
-            - fullName (String: The person's name)
-            - professionalBio (String: An impactful, beautifully written 3-4 sentence hook. Make it memorable.)
-            - skills (Object: Group into exact categories: "Frontend", "Backend", "Tools", "Cloud/DevOps". Return arrays of strings.)
-            - projects (Array of objects: Each must have 'title', 'description' (Focus heavily on the problem solved, tech stack, and impact metrics), and 'techStack' (Array of strings))
-            - contactInfo (Object: 'email', 'linkedin', 'github'. Extract from resume or use placeholders)
+        THE JSON MUST STRICTLY FOLLOW THIS EXACT STRUCTURE:
+        {
+            "fullName": "String — The person's full name.",
 
-            WARNING: You MUST ONLY return raw JSON. No markdown blocks, no triple backticks, and absolutely no surrounding text.
+            "tagline": "String — A short, punchy 1-line role descriptor. E.g., 'Full-Stack Developer (MERN)' or 'AI/ML Engineer & Open Source Contributor'. Make it sharp and specific.",
+
+            "professionalBio": "String — An impactful, beautifully written 3-4 sentence hook about the person. Make it memorable, confident, and results-focused.",
+
+            "skills": {
+                "Frontend": ["Array of frontend skill strings, e.g., React, Next.js, TypeScript"],
+                "Backend": ["Array of backend skill strings, e.g., Node.js, Express, PostgreSQL"],
+                "Tools": ["Array of tool strings, e.g., Git, Docker, Figma"],
+                "Cloud/DevOps": ["Array of cloud/devops strings, e.g., AWS, Render, Vercel"]
+            },
+
+            "projects": [
+                {
+                    "title": "Project name",
+                    "description": "Focus heavily on the problem solved, tech stack used, and measurable impact metrics. Be specific.",
+                    "techStack": ["Array of tech strings used in this project"]
+                }
+            ],
+
+            "experience": [
+                {
+                    "companyName": "Company name",
+                    "designation": "Job title / role name",
+                    "role": "One of: Internship | Full-Time | Part-Time | Freelance | Contract",
+                    "startDate": "Start date as string, e.g., Jan 2024",
+                    "endDate": "End date as string, e.g., Present or Mar 2025",
+                    "description": "2-3 bullet points of key achievements and responsibilities. Be metric-driven and impactful."
+                }
+            ],
+
+            "education": [
+                {
+                    "certificateName": "Degree or certificate name, e.g., B.Tech in Computer Science",
+                    "institute": "Institution name",
+                    "startDate": "Start date as string, e.g., Jun 2021",
+                    "endDate": "End date as string, e.g., May 2025",
+                    "description": "Optional: relevant coursework, achievements, GPA, or honors."
+                }
+            ],
+
+            "contactInfo": {
+                "email": "Email address, extract from resume or use placeholder",
+                "linkedin": "LinkedIn URL or username, extract from resume or use placeholder",
+                "github": "GitHub URL or username, extract from resume or use placeholder"
+            }
+        }
+
+        IMPORTANT RULES:
+        - experience and education MUST be arrays, even if there is only one entry.
+        - If resume has multiple jobs or degrees, include ALL of them as separate array items.
+        - If any field cannot be found in the resume, generate a realistic and appropriate placeholder.
+        - You MUST ONLY return raw JSON. No markdown blocks, no triple backticks, and absolutely no surrounding text.
         `;
         let text: string
         try{
