@@ -51,7 +51,7 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
             }
         }
         const model = GenAi.getGenerativeModel({
-            model: "gemini-2.5-flash", generationConfig: {
+            model: "gemini-1.5-flash", generationConfig: {
                 responseMimeType: "application/json",
             }
         });
@@ -144,14 +144,14 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
         - You MUST ONLY return raw JSON. No markdown blocks, no triple backticks, and absolutely no surrounding text.
         `;
         let text: string
-        try{
-        const Result = await model.generateContent(MasterPrompt);
-        const response = await Result.response;
-        text = response.text();
-        }catch(error){
-            logger.error("Gemini API Error",{error});
+        try {
+            const Result = await model.generateContent(MasterPrompt);
+            const response = await Result.response;
+            text = response.text();
+        } catch (error) {
+            logger.error("Gemini API Error", { error });
             throw new AppError(
-                "AI Service is currently unavailable. Please Try Again Later ",503
+                "AI Service is currently unavailable. Please Try Again Later ", 503
             )
         }
         const jsonString = text
