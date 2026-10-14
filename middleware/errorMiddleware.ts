@@ -57,6 +57,6 @@ export const errMiddleware = (
     res.status(statusCode).json({
         success:false,
         message:
-        statusCode>=500?"Internal Server Error":err.message || "Request Failed"
+        err.message || "Request Failed"
     })
 }
