@@ -148,12 +148,12 @@ export const GeneratePortfolio = async (req: Request, res: Response, next: NextF
             const Result = await model.generateContent(MasterPrompt);
             const response = await Result.response;
             text = response.text();
-        } catch (error) {
+        } catch (error: any) {
             logger.error("Gemini API Error", { error });
-            throw new AppError(
-                "AI Service is currently unavailable. Please Try Again Later ", 503
-            )
+            const errorDetails = error?.message || error?.statusText || "Unknown error";
+            throw new AppError(`AI Error: ${errorDetails}`, 503);
         }
+
         const jsonString = text
             .replace(/```json/g, "")
             .replace(/```/g, "")
