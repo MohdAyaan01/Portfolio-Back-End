@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch index.ts",
     "start": "tsx index.ts",
-    "build": "tsc"
+    "build": "prisma generate && tsc"
   },
   "keywords": [],
   "author": "",
@@ -42,7 +42,6 @@
     "@types/node": "^25.5.0",
     "cloudinary": "^2.9.0",
     "jsonwebtoken": "^9.0.3",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

@@ -18,8 +18,8 @@ const app = express();
 EnvSchema.parse(process.env);
 app.use(helmet());
 app.use(GlobalRateLimiter);
-app.use(express.json({limit:"1mb"}));
-app.use(express.urlencoded({ extended: true, limit:"1mb" }));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 
 const corOptions: CorsOptions = {
@@ -31,36 +31,38 @@ const corOptions: CorsOptions = {
 };
 app.use(cors(corOptions));
 
-app.get("/health",(req,res)=>{
+app.get("/health", (req, res) => {
     res.status(200).json({
-        success:true,
-        message:"Serve is Healthy"
+        success: true,
+        message: "Serve is Healthy"
     })
 })
 app.use("/api/auth/user", userRoutes);
 app.use("/api/portfolio", PortfolioRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use(errMiddleware)
-let server:ReturnType<typeof app.listen>
+let server: ReturnType<typeof app.listen>
+
 const startServer = async () => {
-    try {
-
-        await prisma.$connect();
-        logger.info("Database Connected Successfully");
-
-        const PORT = process.env.PORT || 5000;
-        server = app.listen(PORT, () => {
-            logger.info(`Server Running At PORT ${PORT}`);
-        });
-    } catch (error) {
-        logger.error("Failed to start server:", error);
-    }
+    const PORT = Number(process.env.PORT) || 5000;
+    server = app.listen(PORT, "0.0.0.0", async () => {
+        logger.info(`Server running on port ${PORT}`);
+        try {
+            await prisma.$connect();
+            logger.info("Database Connected Successfully");
+        } catch (dbError) {
+            logger.error("Database connection error:", dbError);
+        }
+    });
+    server.on("error", (err) => {
+        logger.error("Server failed to start:", err);
+        process.exit(1);
+    });
 };
-
 startServer();
-const shutdown = async(signal:string)=>{
+const shutdown = async (signal: string) => {
     logger.info(`${signal}received Shutting Down Gracefully`);
-    server.close(async()=>{
+    server.close(async () => {
         await prisma.$disconnect();
 
         logger.info("Server And Database Connection Failed");
@@ -68,5 +70,5 @@ const shutdown = async(signal:string)=>{
     })
 }
 
-process.on("SIGINT",()=>shutdown("SIGINT"));
-process.on("SIGTERM",()=>shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
